@@ -42,9 +42,32 @@ const resolvers = {
             return { token, user };
         },
 
-        savedBooks: async (parent, { username }) => {
-            const params = username ? { username } : {},
-            return Book.find(params).sort({ createdAt: -1 });
+        savedBooks: async (parent, { addBook }, context) => {
+            if (context.user) {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $push: { savedBooks: addBook } },
+                    { new: true }
+                )
+
+                return updatedUser;
+            }
+
+            throw new AuthenticationError('You need to be logged in!');
+        },
+
+        removeBook: async (parent, { removeBook }, context) => {
+            if (context.user) {
+                const updatedUser = await User.findOneAndUptade(
+                    { _id: context.user._id },
+                    { $pull: { savedBooks: removeBook } },
+                    { new: true }
+                )
+
+                return updatedUser;
+            }
+
+            throw new AuthenticationError('You need to be logged in!');
         },
 
         // get all users
